@@ -187,15 +187,27 @@ onMounted(() => {
   padding: 16px;
 }
 
+.fee-settings :deep(.van-field__label) {
+  color: var(--text-primary);
+}
+
+.fee-settings :deep(.van-field__control) {
+  color: var(--text-primary);
+}
+
+.fee-settings :deep(.van-field__control::placeholder) {
+  color: var(--text-tertiary);
+}
+
 .unit {
-  color: #999;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .fee-hint {
   padding: 8px 0 0;
   font-size: 12px;
-  color: #999;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 </style>

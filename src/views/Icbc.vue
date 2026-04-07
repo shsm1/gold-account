@@ -280,17 +280,18 @@ async function onSubmit() {
 
 <style scoped>
 .holding-card {
-  background: #fff;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border: 1px solid var(--gold-accent);
   border-radius: 12px;
   padding: 16px;
   margin: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15);
 }
 
 .holding-title {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--gold-accent);
   margin-bottom: 12px;
   text-align: center;
 }
@@ -310,14 +311,14 @@ async function onSubmit() {
 
 .holding-item .label {
   font-size: 12px;
-  color: #999;
+  color: var(--text-secondary);
   margin-bottom: 4px;
 }
 
 .holding-item .value {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: #fff;
 }
 
 .profit-positive {
@@ -331,15 +332,16 @@ async function onSubmit() {
 .records-section {
   margin: 16px;
   padding: 16px;
-  background: #fff;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .section-title {
   font-size: 16px;
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 12px;
 }
 
@@ -348,7 +350,12 @@ async function onSubmit() {
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.3s ease;
+}
+
+.record-item:hover {
+  background: var(--bg-card-hover);
 }
 
 .record-left {
@@ -369,28 +376,28 @@ async function onSubmit() {
 }
 
 .record-type.buy {
-  background: #fff7e6;
-  color: #fa8c16;
+  background: rgba(238, 122, 29, 0.2);
+  color: #ee7a1d;
 }
 
 .record-type.sell {
-  background: #e6f7ff;
+  background: rgba(24, 144, 255, 0.2);
   color: #1890ff;
 }
 
 .record-type.extract {
-  background: #f6ffed;
+  background: rgba(82, 196, 26, 0.2);
   color: #52c41a;
 }
 
 .record-date {
   font-size: 13px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .record-detail {
   font-size: 14px;
-  color: #333;
+  color: #fff;
   font-weight: 500;
 }
 
@@ -403,12 +410,12 @@ async function onSubmit() {
 .empty-state {
   text-align: center;
   padding: 32px 0;
-  color: #999;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .batch-popup {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 12px 12px 0 0;
 }
 
@@ -417,7 +424,8 @@ async function onSubmit() {
   font-weight: 600;
   text-align: center;
   padding: 16px;
-  border-bottom: 1px solid #f5f5f5;
+  color: var(--gold-accent);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .batch-list {
@@ -427,7 +435,7 @@ async function onSubmit() {
 
 .batch-item {
   padding: 16px;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .batch-item-left {
@@ -437,28 +445,50 @@ async function onSubmit() {
 
 .batch-label {
   font-size: 14px;
-  color: #333;
+  color: #fff;
   font-weight: 500;
 }
 
 .batch-detail {
   font-size: 12px;
-  color: #999;
+  color: var(--text-secondary);
   margin-top: 4px;
 }
 
 .no-batches {
   text-align: center;
   padding: 32px;
-  color: #999;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .batch-popup-close {
   text-align: center;
   padding: 16px;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 16px;
-  border-top: 1px solid #f5f5f5;
+  border-top: 1px solid var(--border-color);
 }
+
+/* 动画 */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.record-item {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+.record-item:nth-child(1) { animation-delay: 0s; }
+.record-item:nth-child(2) { animation-delay: 0.03s; }
+.record-item:nth-child(3) { animation-delay: 0.06s; }
+.record-item:nth-child(4) { animation-delay: 0.09s; }
+.record-item:nth-child(5) { animation-delay: 0.12s; }
 </style>

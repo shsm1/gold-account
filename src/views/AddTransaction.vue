@@ -333,6 +333,7 @@ onMounted(async () => {
   padding: 16px;
   max-height: 60vh;
   overflow-y: auto;
+  background: var(--bg-card);
 }
 
 .batch-picker-header {
@@ -342,14 +343,61 @@ onMounted(async () => {
   padding: 8px 0 16px;
   font-size: 16px;
   font-weight: 500;
-  border-bottom: 1px solid #eee;
+  color: var(--gold-accent);
+  border-bottom: 1px solid var(--border-color);
   margin-bottom: 8px;
+}
+
+.batch-picker :deep(.van-cell) {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.batch-picker :deep(.van-cell__title) {
+  color: var(--text-primary);
+}
+
+.batch-picker :deep(.van-cell__label) {
+  color: var(--text-secondary);
+}
+
+.batch-picker :deep(.van-icon) {
+  color: var(--text-secondary);
 }
 
 .empty-batches {
   text-align: center;
   padding: 32px 0;
-  color: #999;
+  color: var(--text-secondary);
   font-size: 14px;
+}
+
+.form-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin: 16px;
+  overflow: hidden;
+}
+
+.form-section :deep(.van-cell) {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.form-section :deep(.van-cell__title) {
+  color: var(--text-primary);
+}
+
+.form-section :deep(.van-field__label) {
+  color: var(--text-primary);
+}
+
+.form-section :deep(.van-field__control) {
+  color: var(--text-primary);
+}
+
+.form-section :deep(.van-field__control::placeholder) {
+  color: var(--text-tertiary);
 }
 </style>

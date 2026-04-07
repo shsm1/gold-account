@@ -174,19 +174,93 @@ onMounted(loadData)
   height: 100%;
 }
 
+.tx-item {
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.3s ease;
+}
+
+.tx-item:hover {
+  background: var(--bg-card-hover);
+}
+
+.tx-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.tx-type {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.tx-type.buy {
+  color: #ee0a24;
+}
+
+.tx-type.sell {
+  color: #07c160;
+}
+
+.tx-amount {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--gold-accent);
+}
+
+.tx-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.tx-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
 .tx-batch-ref {
   font-size: 12px;
-  color: #1989fa;
+  color: var(--gold-accent);
   margin-top: 4px;
 }
 
 .batch-card {
   margin: 8px 16px;
-  background: #fff;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  animation: slideUp 0.4s ease-out forwards;
 }
+
+.batch-card:hover {
+  border-color: var(--gold-accent);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.batch-card:nth-child(1) { animation-delay: 0s; }
+.batch-card:nth-child(2) { animation-delay: 0.05s; }
+.batch-card:nth-child(3) { animation-delay: 0.1s; }
+.batch-card:nth-child(4) { animation-delay: 0.15s; }
+.batch-card:nth-child(5) { animation-delay: 0.2s; }
 
 .batch-header {
   display: flex;
@@ -197,7 +271,7 @@ onMounted(loadData)
 
 .batch-date {
   font-size: 14px;
-  color: #666;
+  color: var(--gold-accent);
   font-weight: 500;
 }
 
@@ -208,7 +282,7 @@ onMounted(loadData)
 
 .batch-table {
   min-width: 480px;
-  border: 1px solid #eee;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -218,17 +292,17 @@ onMounted(loadData)
 }
 
 .table-header-row {
-  background: #f7f8fa;
+  background: #252525;
 }
 
 .th {
   flex: 1;
-  padding: 8px 4px;
+  padding: 10px 4px;
   font-size: 12px;
-  color: #999;
+  color: var(--text-secondary);
   text-align: center;
-  border-bottom: 1px solid #eee;
-  border-right: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
 }
 
 .th:last-child {
@@ -237,12 +311,12 @@ onMounted(loadData)
 
 .td {
   flex: 1;
-  padding: 10px 4px;
+  padding: 12px 4px;
   font-size: 13px;
-  color: #333;
+  color: var(--text-primary);
   text-align: center;
   font-weight: 500;
-  border-right: 1px solid #f0f0f0;
+  border-right: 1px solid var(--border-color);
 }
 
 .td:last-child {
@@ -255,9 +329,9 @@ onMounted(loadData)
 
 .batch-note {
   font-size: 12px;
-  color: #999;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px dashed #eee;
+  color: var(--text-secondary);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-color);
 }
 </style>

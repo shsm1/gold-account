@@ -3,10 +3,6 @@
     <div class="holding-card">
       <div class="card-header">
         <h2>当前持仓</h2>
-        <div class="header-center">
-          <span class="center-label">已投入</span>
-          <span class="center-value">¥{{ totalInvested }}</span>
-        </div>
         <div class="account-balance">
           <span class="balance-label">账户余额</span>
           <span class="balance-value" :class="accountBalance >= 0 ? 'profit-positive' : 'profit-negative'">
@@ -23,7 +19,7 @@
         </div>
         <div class="item">
           <div class="label">持仓总价</div>
-          <div class="value">¥{{ holdingTotalValue }}</div>
+          <div class="value gold-text">¥{{ holdingTotalValue }}</div>
         </div>
         <div class="item">
           <div class="label">已实现盈亏</div>
@@ -55,17 +51,17 @@
           </div>
           <div class="item">
             <div class="label">总市值</div>
-            <div class="value">¥{{ totalMarketValue }}</div>
+            <div class="value gold-text">¥{{ totalMarketValue }}</div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="quick-actions">
-      <van-button type="danger" block round @click="$router.push('/add?type=buy')">
+      <van-button class="btn-press gold-btn" type="primary" block round @click="$router.push('/add?type=buy')">
         买入
       </van-button>
-      <van-button type="success" block round @click="$router.push('/add?type=sell')">
+      <van-button class="btn-press" type="success" block round @click="$router.push('/add?type=sell')">
         卖出
       </van-button>
     </div>
@@ -207,6 +203,106 @@ onMounted(loadData)
 </script>
 
 <style scoped>
+/* 持仓卡片样式 */
+.holding-card {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border: 1px solid var(--gold-accent);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 16px;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15), inset 0 1px 0 rgba(212, 175, 55, 0.1);
+  animation: cardGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes cardGlow {
+  from {
+    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.1), inset 0 1px 0 rgba(212, 175, 55, 0.1);
+  }
+  to {
+    box-shadow: 0 4px 25px rgba(212, 175, 55, 0.2), inset 0 1px 0 rgba(212, 175, 55, 0.15);
+  }
+}
+
+.holding-card h2 {
+  font-size: 16px;
+  color: var(--gold-accent);
+  margin-bottom: 8px;
+}
+
+.holding-card .grams {
+  font-size: 42px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  background: linear-gradient(135deg, #fff 0%, var(--gold-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.holding-card .unit {
+  font-size: 16px;
+  font-weight: bold;
+  opacity: 0.7;
+  margin-bottom: 16px;
+}
+
+.holding-details {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.holding-details .item {
+  text-align: center;
+}
+
+.holding-details .label {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.holding-details .value {
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.gold-text {
+  color: var(--gold-accent) !important;
+}
+
+/* 按钮样式 */
+.quick-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+}
+
+.quick-actions .van-button {
+  flex: 1;
+  height: 44px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.gold-btn {
+  background: linear-gradient(135deg, var(--gold-accent) 0%, var(--gold-dark) 100%) !important;
+  border: none !important;
+  color: #0a0a0a !important;
+}
+
+.btn-press {
+  transition: all 0.15s ease;
+}
+
+.btn-press:active {
+  transform: scale(0.96);
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -217,15 +313,23 @@ onMounted(loadData)
 .section-title {
   font-size: 16px;
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .batch-card {
   margin: 8px 16px;
-  background: #fff;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+.batch-card:hover {
+  border-color: var(--gold-accent);
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15);
 }
 
 .batch-header {
@@ -237,7 +341,7 @@ onMounted(loadData)
 
 .batch-date {
   font-size: 14px;
-  color: #666;
+  color: var(--gold-accent);
   font-weight: 500;
 }
 
@@ -248,7 +352,7 @@ onMounted(loadData)
 
 .batch-table {
   min-width: 480px;
-  border: 1px solid #eee;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -258,17 +362,17 @@ onMounted(loadData)
 }
 
 .table-header-row {
-  background: #f7f8fa;
+  background: #252525;
 }
 
 .th {
   flex: 1;
-  padding: 8px 4px;
+  padding: 10px 4px;
   font-size: 12px;
-  color: #999;
+  color: var(--text-secondary);
   text-align: center;
-  border-bottom: 1px solid #eee;
-  border-right: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
 }
 
 .th:last-child {
@@ -277,12 +381,12 @@ onMounted(loadData)
 
 .td {
   flex: 1;
-  padding: 10px 4px;
+  padding: 12px 4px;
   font-size: 13px;
-  color: #333;
+  color: var(--text-primary);
   text-align: center;
   font-weight: 500;
-  border-right: 1px solid #f0f0f0;
+  border-right: 1px solid var(--border-color);
 }
 
 .td:last-child {
@@ -295,10 +399,10 @@ onMounted(loadData)
 
 .batch-note {
   font-size: 12px;
-  color: #999;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px dashed #eee;
+  color: var(--text-secondary);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-color);
 }
 
 .batch-action {
@@ -309,7 +413,7 @@ onMounted(loadData)
 .current-price-section {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
 }
 
 .price-input-row {
@@ -321,29 +425,32 @@ onMounted(loadData)
 .price-label {
   font-size: 14px;
   white-space: nowrap;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .price-input {
   flex: 1;
   padding: 0;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 8px;
 }
 
 .price-input :deep(.van-field__control) {
-  color: #fff;
+  color: var(--gold-accent);
   font-size: 16px;
   font-weight: 500;
   text-align: center;
 }
 
 .price-input :deep(.van-field__control::placeholder) {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .price-unit {
   font-size: 14px;
   white-space: nowrap;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .floating-details {
@@ -358,7 +465,7 @@ onMounted(loadData)
 
 .floating-details .label {
   font-size: 12px;
-  opacity: 0.8;
+  opacity: 0.7;
   margin-bottom: 4px;
 }
 
@@ -375,9 +482,10 @@ onMounted(loadData)
 }
 
 .card-header h2 {
-  font-size: 20px;
+  font-size: 18px;
   opacity: 0.9;
   margin: 0;
+  color: var(--gold-accent);
 }
 
 .header-center {
@@ -385,13 +493,13 @@ onMounted(loadData)
 }
 
 .center-label {
-  font-size: 20px;
+  font-size: 12px;
   opacity: 0.7;
   display: block;
 }
 
 .center-value {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: bold;
   color: #fff;
 }
@@ -401,13 +509,37 @@ onMounted(loadData)
 }
 
 .balance-label {
-  font-size: 20px;
+  font-size: 12px;
   opacity: 0.7;
   display: block;
 }
 
 .balance-value {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: bold;
 }
+
+/* 动画 */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 延迟动画 */
+.batch-card:nth-child(1) { animation-delay: 0s; }
+.batch-card:nth-child(2) { animation-delay: 0.05s; }
+.batch-card:nth-child(3) { animation-delay: 0.1s; }
+.batch-card:nth-child(4) { animation-delay: 0.15s; }
+.batch-card:nth-child(5) { animation-delay: 0.2s; }
+.batch-card:nth-child(6) { animation-delay: 0.25s; }
+.batch-card:nth-child(7) { animation-delay: 0.3s; }
+.batch-card:nth-child(8) { animation-delay: 0.35s; }
+.batch-card:nth-child(9) { animation-delay: 0.4s; }
+.batch-card:nth-child(10) { animation-delay: 0.45s; }
 </style>
