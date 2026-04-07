@@ -9,6 +9,7 @@
 - **批次管理** - 支持从指定批次部分卖出，每批独立计算盈亏
 - **持仓统计** - 持仓克数、平均成本(含手续费摊入)、持仓总价、已实现盈亏
 - **账户余额** - 总投入 - 累计买入(含手续费) + 累计卖出(扣手续费)
+- **如意金统计** - 计算如意金持仓情况
 
 ### 费率与价格
 - **手续费设置** - 买入/卖出费率设置，新增交易自动计算手续费，可手动修改
@@ -28,58 +29,11 @@
 | 如意金 | 工行如意积存金独立管理 |
 | 设置 | 手续费费率、总投入金额、数据导入/导出 |
 
-## 持仓批次展示
-
-采用横向表格展示：
-- 买入量 | 剩余 | 已售 | 成本/g | 盈亏 | 总价
-- 按买入时间升序排列，最早买入的批次显示在前
-
 ## 开发
 
 ```bash
 npm install
 npm run dev
-```
-
-## 构建
-
-```bash
-npm run build
-```
-
-## 打包 APK
-
-### 环境要求
-
-1. **JDK 17**（推荐，最低需要 JDK 11）
-   - 下载地址：https://adoptium.net/
-   - 安装后设置环境变量 `JAVA_HOME`
-
-2. **Android Studio**（包含 Android SDK）
-   - 下载地址：https://developer.android.com/studio
-   - 安装后设置环境变量 `ANDROID_HOME`
-
-### 打包步骤
-
-```bash
-# 1. 构建 Web 资源
-npm run build
-
-# 2. 同步到 Android 项目
-npx cap sync android
-
-# 3. 用 Android Studio 打开
-npx cap open android
-
-# 4. 在 Android Studio 中点击 Build -> Build Bundle(s) / APK(s) -> Build APK(s)
-```
-
-### 命令行打包（需要配置好 Gradle）
-
-```bash
-cd android
-./gradlew assembleDebug
-# APK 输出在 android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ## 项目结构
@@ -88,17 +42,17 @@ cd android
 gold-account/
 ├── src/
 │   ├── main.js              # 入口文件
-│   ├── App.vue              # 根组件（底部导航）
+│   ├── App.vue              # 根组件
 │   ├── router.js            # 路由配置
 │   ├── db/
-│   │   └── index.js         # IndexedDB 数据操作（双库：主交易+ICBC）
+│   │   └── index.js         # IndexedDB 数据操作
 │   ├── utils/
-│   │   └── calculator.js    # 持仓/盈亏计算（含ICBC计算）
+│   │   └── calculator.js    # 持仓/盈亏计算
 │   └── views/
 │       ├── Home.vue          # 首页-持仓概览+批次列表
 │       ├── Transactions.vue  # 交易记录列表
 │       ├── AddTransaction.vue # 新增/编辑交易
-│       ├── Icbc.vue          # 工行如意金页面
+│       ├── xxxx.vue          # 如意金页面
 │       └── Settings.vue      # 设置-参数/数据管理
 ├── android/                  # Capacitor Android 项目
 ├── capacitor.config.json     # Capacitor 配置
@@ -109,10 +63,9 @@ gold-account/
 ## 技术栈
 
 - Vue 3 + Vite
-- Vant 4（移动端 UI）
+- Vant 4
 - Vue Router 4
-- IndexedDB（idb 封装）
-- Capacitor 5（原生打包）
+- IndexedDB
 
 ## 数据说明
 
