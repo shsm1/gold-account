@@ -2,7 +2,9 @@
   <div>
     <div class="holding-card">
       <div class="card-header">
-        <h2>当前持仓</h2>
+        <h2>当前持仓:&nbsp{{ holding.totalGrams }}&nbsp克 </h2>
+<!--        <div class="grams"></div>-->
+<!--        <div class="unit"></div>-->
         <div class="account-balance">
           <span class="balance-label">账户余额</span>
           <span class="balance-value" :class="accountBalance >= 0 ? 'profit-positive' : 'profit-negative'">
@@ -10,8 +12,7 @@
           </span>
         </div>
       </div>
-      <div class="grams">{{ holding.totalGrams }}</div>
-      <div class="unit">克</div>
+
       <div class="holding-details">
         <div class="item">
           <div class="label">平均成本</div>
@@ -68,7 +69,7 @@
 
     <div class="section-header">
       <span class="section-title">持仓批次</span>
-      <van-radio-group v-model="batchFilter" direction="horizontal" icon-size="14">
+      <van-radio-group v-model="batchFilter" direction="horizontal" icon-size="13">
         <van-radio name="all">全部</van-radio>
         <van-radio name="active">持仓中</van-radio>
         <van-radio name="closed">已清仓</van-radio>
@@ -86,41 +87,60 @@
       >
         <div class="batch-header">
           <div class="batch-date">{{ formatDate(batch.buyDate) }}</div>
-          <van-tag :type="batch.remainingGrams > 0.0001 ? 'primary' : 'default'" size="medium">
+          <van-tag :type="batch.remainingGrams > 0.0001 ? 'primary' : 'default'" size="small">
             {{ batch.remainingGrams > 0.0001 ? '持仓中' : '已清仓' }}
           </van-tag>
         </div>
 
-        <div class="batch-table-wrapper">
-          <div class="batch-table">
-            <div class="table-row table-header-row">
-              <div class="th">买入量</div>
-              <div class="th">剩余</div>
-              <div class="th">已售</div>
-              <div class="th">成本/g</div>
-              <div class="th">盈亏</div>
-              <div class="th">总价</div>
+        <div class="batch-content">
+          <div class="batch-left">
+            <div class="batch-row">
+              <span class="label">买入</span>
+              <span class="value">{{ batch.buyGrams }}g</span>
             </div>
-            <div class="table-row table-body-row">
-              <div class="td">{{ batch.buyGrams }}g</div>
-              <div class="td">{{ batch.remainingGrams }}g</div>
-              <div class="td">{{ batch.soldGrams }}g</div>
-              <div class="td">¥{{ batch.costPerGram }}</div>
-              <div class="td profit-cell" :class="batch.realizedProfit >= 0 ? 'profit-positive' : 'profit-negative'">
-                {{ batch.realizedProfit !== 0 ? (batch.realizedProfit >= 0 ? '+' : '') : '' }}¥{{ batch.realizedProfit }}
-              </div>
-              <div class="td">¥{{ (batch.buyGrams * batch.costPerGram).toFixed(2) }}</div>
+            <div class="batch-row">
+              <span class="label">剩余</span>
+              <span class="value highlight">{{ batch.remainingGrams }}g</span>
             </div>
+            <div class="batch-row">
+              <span class="label">已售</span>
+              <span class="value">{{ batch.soldGrams }}g</span>
+            </div>
+          </div>
+          
+          <div class="batch-right">
+            <div class="batch-row">
+              <span class="label">成本</span>
+              <span class="value">¥{{ batch.costPerGram }}/g</span>
+            </div>
+            <div class="batch-row">
+              <span class="label">总价</span>
+              <span class="value gold-text">¥{{ (batch.buyGrams * batch.costPerGram).toFixed(2) }}</span>
+            </div>
+<!--            <div class="batch-row">-->
+<!--              <span class="label">盈亏</span>-->
+<!--              <span class="value" :class="batch.realizedProfit >= 0 ? 'profit-positive' : 'profit-negative'">-->
+<!--                {{ batch.realizedProfit !== 0 ? (batch.realizedProfit >= 0 ? '+' : '') : '' }}¥{{ batch.realizedProfit }}-->
+<!--              </span>-->
+<!--            </div>-->
+
+          </div>
+          <div class="batch-action">
+            <van-button
+                class="btn-sell"
+                type="success"
+                size="mini"
+                round
+                :disabled="batch.remainingGrams <= 0.0001"
+                :style="{ visibility: batch.remainingGrams <= 0.0001 ? 'hidden' : 'visible' }"
+                @click="sellFromBatch(batch)"
+            >
+              卖出
+            </van-button>
           </div>
         </div>
 
-        <div v-if="batch.note" class="batch-note">{{ batch.note }}</div>
 
-        <div v-if="batch.remainingGrams > 0.0001" class="batch-action">
-          <van-button type="success" size="small" round @click="sellFromBatch(batch)">
-            从此批卖出
-          </van-button>
-        </div>
       </div>
     </div>
   </div>
@@ -208,8 +228,8 @@ onMounted(loadData)
   background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
   border: 1px solid var(--gold-accent);
   border-radius: 16px;
-  padding: 20px;
-  margin: 16px;
+  padding: 8px;
+  margin: 6px;
   color: #fff;
   box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15), inset 0 1px 0 rgba(212, 175, 55, 0.1);
   animation: cardGlow 3s ease-in-out infinite alternate;
@@ -231,13 +251,13 @@ onMounted(loadData)
 }
 
 .holding-card .grams {
-  font-size: 42px;
-  font-weight: bold;
-  margin-bottom: 4px;
-  background: linear-gradient(135deg, #fff 0%, var(--gold-accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  /*font-size: 42px;*/
+  /*font-weight: bold;*/
+  /*margin-bottom: 4px;*/
+  /*background: linear-gradient(135deg, #fff 0%, var(--gold-accent) 100%);*/
+  /*-webkit-background-clip: text;*/
+  /*-webkit-text-fill-color: transparent;*/
+  /*!*background-clip: text;*!*/
 }
 
 .holding-card .unit {
@@ -279,12 +299,12 @@ onMounted(loadData)
 .quick-actions {
   display: flex;
   gap: 12px;
-  padding: 16px;
+  padding: 6px;
 }
 
 .quick-actions .van-button {
   flex: 1;
-  height: 44px;
+  height: 30px;
   font-weight: 600;
   font-size: 16px;
 }
@@ -307,24 +327,102 @@ onMounted(loadData)
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 16px 8px;
+  padding: 4px 4px 4px;
 }
 
 .section-title {
-  font-size: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  padding: 4px 20px 4px;
+}
+
+.batch-card {
+  margin: 4px 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 5px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  animation: slideUp 0.4s ease-out forwards;
+  position: relative;
+}
+
+.batch-card:hover {
+  border-color: var(--gold-accent);
+}
+
+.batch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.batch-date {
+  font-size: 13px;
+  color: var(--gold-accent);
+  font-weight: 500;
+}
+
+.batch-content {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.batch-left, .batch-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.batch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.batch-row .label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.batch-row .value {
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-primary);
 }
 
-.batch-card {
-  margin: 8px 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-  animation: slideUp 0.4s ease-out forwards;
+.batch-row .value.highlight {
+  color: var(--gold-accent);
+  font-size: 14px;
+}
+
+.batch-row .value.gold-text {
+  color: var(--gold-accent);
+}
+
+.batch-action {
+  /*position: absolute;*/
+  right: 6px;
+  bottom: 6px;
+}
+
+.btn-sell {
+  padding: 0 12px;
+  height: 30px;
+  font-size: 12px;
+}
+
+.batch-note {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-color);
 }
 
 .batch-card:hover {
