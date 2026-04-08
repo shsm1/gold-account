@@ -42,6 +42,16 @@
             clearable
           />
           <span class="price-unit">元/g</span>
+          <van-button 
+            v-if="currentPrice && parseFloat(currentPrice) > 0"
+            class="btn-filter" 
+            size="mini" 
+            round 
+            :type="priceFilterActive ? 'primary' : 'default'"
+            @click="togglePriceFilter"
+          >
+            低于现价
+          </van-button>
         </div>
         <div v-if="currentPrice && parseFloat(currentPrice) > 0" class="floating-details">
           <div class="item">
@@ -147,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAllTransactions } from '../db'
 import { calculateHolding, getBatches, calculateFloatingProfit, formatDate, getTotalInvested } from '../utils/calculator'
@@ -165,6 +175,7 @@ const batches = ref([])
 const batchFilter = ref('all')
 const currentPrice = ref('')
 const totalInvested = ref(0)
+const priceFilterActive = ref(false)
 
 const floatingProfit = computed(() => {
   const price = parseFloat(currentPrice.value)
@@ -198,14 +209,30 @@ function formatPriceInput(value) {
   return numeric
 }
 
+function togglePriceFilter() {
+  priceFilterActive.value = !priceFilterActive.value
+}
+
 const filteredBatches = computed(() => {
+  let result = batches.value
+  
+  // 状态筛选
   if (batchFilter.value === 'active') {
-    return batches.value.filter(b => b.remainingGrams > 0.0001)
+    result = result.filter(b => b.remainingGrams > 0.0001)
+  } else if (batchFilter.value === 'closed') {
+    result = result.filter(b => b.remainingGrams <= 0.0001)
   }
-  if (batchFilter.value === 'closed') {
-    return batches.value.filter(b => b.remainingGrams <= 0.0001)
+  
+  // 金价筛选
+  if (priceFilterActive.value && currentPrice.value) {
+    const price = parseFloat(currentPrice.value)
+    result = result.filter(b => 
+      b.remainingGrams > 0.0001 && 
+      b.costPerGram < price
+    )
   }
-  return batches.value
+  
+  return result
 })
 
 async function loadData() {
@@ -220,6 +247,12 @@ function sellFromBatch(batch) {
 }
 
 onMounted(loadData)
+
+watch(currentPrice, (newVal) => {
+  if (!newVal || parseFloat(newVal) <= 0) {
+    priceFilterActive.value = false
+  }
+})
 </script>
 
 <style scoped>
@@ -549,6 +582,11 @@ onMounted(loadData)
   font-size: 14px;
   white-space: nowrap;
   color: rgba(255, 255, 255, 0.7);
+}
+
+.btn-filter {
+  margin-left: 8px;
+  font-size: 12px;
 }
 
 .floating-details {
