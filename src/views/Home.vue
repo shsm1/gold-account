@@ -103,7 +103,7 @@
         </div>
 
         <div class="batch-content">
-          <div class="batch-left">
+          <div class="batch-col">
             <div class="batch-row">
               <span class="label">买入</span>
               <span class="value">{{ batch.buyGrams }}g</span>
@@ -112,38 +112,44 @@
               <span class="label">剩余</span>
               <span class="value highlight">{{ batch.remainingGrams }}g</span>
             </div>
+
+          </div>
+          
+          <div class="batch-col">
             <div class="batch-row">
               <span class="label">已售</span>
               <span class="value">{{ batch.soldGrams }}g</span>
             </div>
-          </div>
-          
-          <div class="batch-right">
             <div class="batch-row">
               <span class="label">成本</span>
               <span class="value">¥{{ batch.costPerGram }}/g</span>
             </div>
+          </div>
+
+          <div class="batch-col">
             <div class="batch-row">
               <span class="label">总价</span>
               <span class="value gold-text">¥{{ (batch.buyGrams * batch.costPerGram).toFixed(2) }}</span>
             </div>
-<!--            <div class="batch-row">-->
-<!--              <span class="label">盈亏</span>-->
-<!--              <span class="value" :class="batch.realizedProfit >= 0 ? 'profit-positive' : 'profit-negative'">-->
-<!--                {{ batch.realizedProfit !== 0 ? (batch.realizedProfit >= 0 ? '+' : '') : '' }}¥{{ batch.realizedProfit }}-->
-<!--              </span>-->
-<!--            </div>-->
+            <div class="batch-row">
+              <span class="label">盈亏</span>
+              <span class="value" :class="batch.realizedProfit >= 0 ? 'profit-positive' : 'profit-negative'">
+                {{ batch.realizedProfit !== 0 ? (batch.realizedProfit >= 0 ? '+' : '') : '' }}¥{{ batch.realizedProfit }}
+              </span>
+            </div>
+
 
           </div>
+          
           <div class="batch-action">
             <van-button
-                class="btn-sell"
-                type="success"
-                size="mini"
-                round
-                :disabled="batch.remainingGrams <= 0.0001"
-                :style="{ visibility: batch.remainingGrams <= 0.0001 ? 'hidden' : 'visible' }"
-                @click="sellFromBatch(batch)"
+              class="btn-sell"
+              type="success"
+              size="mini"
+              round
+              :disabled="batch.remainingGrams <= 0.0001"
+              :style="{ visibility: batch.remainingGrams <= 0.0001 ? 'hidden' : 'visible' }"
+              @click="sellFromBatch(batch)"
             >
               卖出
             </van-button>
@@ -401,8 +407,16 @@ watch(currentPrice, (newVal) => {
 
 .batch-content {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
   gap: 8px;
+}
+
+.batch-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }
 
 .batch-left, .batch-right {

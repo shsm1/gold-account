@@ -28,12 +28,12 @@
       </div>
     </div>
 
-    <van-cell-group inset>
-      <van-cell title="交易类型">
+    <van-cell-group inset >
+      <van-cell title="交易类型" >
         <van-radio-group v-model="form.type" direction="horizontal" @change="onTypeChange">
-          <van-radio name="buy">买入</van-radio>
-          <van-radio name="sell">卖出</van-radio>
-          <van-radio name="extract">提取</van-radio>
+          <van-radio name="buy">买</van-radio>
+          <van-radio name="sell">卖</van-radio>
+          <van-radio name="extract">提</van-radio>
         </van-radio-group>
       </van-cell>
       <van-cell title="日期" :value="form.date" is-link @click="showDatePicker = true" />
@@ -160,14 +160,15 @@ async function loadData() {
 }
 
 // 将输入值的变更逻辑交给 v-model + watch 来管理，移除旧的 onGramsChange/onPriceChange
-function onTypeChange(e) {
+async function onTypeChange(e) {
   const value = (e && typeof e === 'object' && 'detail' in e) ? e.detail : e
   form.value.type = value
   form.value.sourceBatchId = ''
   form.value.fee = ''
   selectedBatchLabel.value = ''
+  maxGrams.value = 0
   if (value !== 'buy') {
-    loadBatches()
+    await loadBatches()
   }
 }
 
@@ -470,6 +471,16 @@ async function onSubmit() {
   border-top: 1px solid var(--border-color);
 }
 
+.van-radio-group {
+  flex-wrap: nowrap !important;
+  white-space: nowrap;
+  gap: 8px;
+}
+
+.van-radio {
+  flex-shrink: 0;
+}
+
 /* 动画 */
 @keyframes slideUp {
   from {
@@ -485,6 +496,8 @@ async function onSubmit() {
 .record-item {
   animation: slideUp 0.3s ease-out forwards;
 }
+
+
 
 .record-item:nth-child(1) { animation-delay: 0s; }
 .record-item:nth-child(2) { animation-delay: 0.03s; }
