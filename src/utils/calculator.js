@@ -12,38 +12,37 @@ export function calculateHolding(transactions) {
   const sorted = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date))
 
   let totalGrams = 0
-  let totalCost = 0
+  let totalBuyAmount = 0
+  let totalSellAmount = 0
   let totalInvested = 0
   let totalReturned = 0
   let realizedProfit = 0
 
   for (const tx of sorted) {
-    const amount = tx.grams * tx.pricePerGram + (tx.fee || 0)
-
     if (tx.type === 'buy') {
+      const amount = tx.grams * tx.pricePerGram + (tx.fee || 0)
       totalGrams += tx.grams
-      totalCost += amount
+      totalBuyAmount += amount
       totalInvested += amount
     } else {
-      const avgCost = totalGrams > 0 ? totalCost / totalGrams : 0
       const sellAmount = tx.grams * tx.pricePerGram - (tx.fee || 0)
+      const avgCost = totalGrams > 0 ? (totalBuyAmount - totalSellAmount) / totalGrams : 0
       const profit = (tx.pricePerGram - avgCost) * tx.grams - (tx.fee || 0)
 
       realizedProfit += profit
+      totalSellAmount += sellAmount
       totalReturned += sellAmount
       totalGrams -= tx.grams
-      totalCost -= avgCost * tx.grams
 
       if (totalGrams < 0.0001) {
         totalGrams = 0
-        totalCost = 0
       }
     }
   }
 
   return {
     totalGrams: parseFloat(totalGrams.toFixed(4)),
-    avgCost: totalGrams > 0 ? parseFloat((totalCost / totalGrams).toFixed(2)) : 0,
+    avgCost: totalGrams > 0 ? parseFloat(((totalBuyAmount - totalSellAmount) / totalGrams).toFixed(2)) : 0,
     totalInvested: parseFloat(totalInvested.toFixed(2)),
     totalReturned: parseFloat(totalReturned.toFixed(2)),
     realizedProfit: parseFloat(realizedProfit.toFixed(2))
