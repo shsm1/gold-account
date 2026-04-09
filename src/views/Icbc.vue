@@ -58,7 +58,7 @@
           </div>
           <div class="record-detail">{{ item.grams }}g × ¥{{ item.pricePerGram }}/g = ¥{{ item.amount }}</div>
         </div>
-        <div class="record-delete" @click="deleteRecord(item.id)">删除</div>
+<!--        <div class="record-delete" @click="deleteRecord(item.id)">删除</div>-->
       </div>
       <div v-if="records.length === 0" class="empty-state">暂无交易记录</div>
     </div>

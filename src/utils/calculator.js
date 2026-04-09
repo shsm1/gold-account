@@ -69,6 +69,7 @@ export function formatDate(dateStr) {
 export function getBatches(transactions) {
   const batches = {}
 
+  // 第一遍：处理所有买入交易，创建批次
   for (const tx of transactions) {
     if (tx.type === 'buy') {
       const batchId = tx.batchId || `batch_${tx.id}`
@@ -88,7 +89,12 @@ export function getBatches(transactions) {
           txId: tx.id
         }
       }
-    } else if (tx.type === 'sell' && tx.sourceBatchId) {
+    }
+  }
+
+  // 第二遍：处理所有卖出交易，扣除对应批次的持仓
+  for (const tx of transactions) {
+    if (tx.type === 'sell' && tx.sourceBatchId) {
       const batch = batches[tx.sourceBatchId]
       if (batch) {
         batch.remainingGrams = Math.max(0, parseFloat((batch.remainingGrams - tx.grams).toFixed(4)))

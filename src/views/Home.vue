@@ -6,10 +6,10 @@
 <!--        <div class="grams"></div>-->
 <!--        <div class="unit"></div>-->
         <div class="account-balance">
-          <span class="balance-label">账户余额</span>
-          <span class="balance-value" :class="accountBalance >= 0 ? 'profit-positive' : 'profit-negative'">
-            ¥{{ accountBalance }}
-          </span>
+          <h2>账户余额： ¥{{ accountBalance }}</h2>
+<!--          <span class="balance-value" :class="accountBalance >= 0 ? 'profit-positive' : 'profit-negative'">-->
+
+<!--          </span>-->
         </div>
       </div>
 
@@ -40,8 +40,18 @@
             class="price-input"
             :formatter="formatPriceInput"
             clearable
+            @update:model-value="isAutoFetch = false"
           />
           <span class="price-unit">元/g</span>
+          <van-button 
+            class="btn-refresh"
+            size="mini" 
+            round 
+            :type="isAutoFetch ? 'success' : 'default'"
+            @click="refreshGoldPrice"
+          >
+            刷新
+          </van-button>
           <van-button 
             v-if="currentPrice && parseFloat(currentPrice) > 0"
             class="btn-filter" 
@@ -53,6 +63,9 @@
             低于现价
           </van-button>
         </div>
+        <div v-if="lastUpdateTime" class="update-time">
+          更新于 {{ formatUpdateTime(lastUpdateTime) }}
+        </div>
         <div v-if="currentPrice && parseFloat(currentPrice) > 0" class="floating-details">
           <div class="item">
             <div class="label">浮动盈亏</div>
@@ -61,7 +74,7 @@
             </div>
           </div>
           <div class="item">
-            <div class="label">总市值</div>
+            <div class="label">总估值</div>
             <div class="value gold-text">¥{{ totalMarketValue }}</div>
           </div>
         </div>
@@ -163,10 +176,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAllTransactions } from '../db'
 import { calculateHolding, getBatches, calculateFloatingProfit, formatDate, getTotalInvested } from '../utils/calculator'
+import { fetchGoldPrice, startAutoRefresh } from '../utils/goldPrice'
 
 const router = useRouter()
 const holding = ref({
@@ -182,6 +196,9 @@ const batchFilter = ref('all')
 const currentPrice = ref('')
 const totalInvested = ref(0)
 const priceFilterActive = ref(false)
+const isAutoFetch = ref(false)
+const lastUpdateTime = ref(null)
+let stopAutoRefresh = null
 
 const floatingProfit = computed(() => {
   const price = parseFloat(currentPrice.value)
@@ -248,11 +265,37 @@ async function loadData() {
   totalInvested.value = getTotalInvested()
 }
 
+async function refreshGoldPrice() {
+  const price = await fetchGoldPrice()
+  if (price !== null) {
+    currentPrice.value = price.toString()
+    lastUpdateTime.value = new Date()
+    isAutoFetch.value = true
+  }
+}
+
+function formatUpdateTime(date) {
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  return `${hours}:${minutes}:${seconds}`
+}
+
 function sellFromBatch(batch) {
   router.push(`/add?type=sell&batchId=${batch.id}&maxGrams=${batch.remainingGrams}`)
 }
 
-onMounted(loadData)
+onMounted(() => {
+  loadData()
+  refreshGoldPrice()
+  stopAutoRefresh = startAutoRefresh(refreshGoldPrice, 60000)
+})
+
+onUnmounted(() => {
+  if (stopAutoRefresh) {
+    stopAutoRefresh()
+  }
+})
 
 watch(currentPrice, (newVal) => {
   if (!newVal || parseFloat(newVal) <= 0) {
@@ -601,6 +644,19 @@ watch(currentPrice, (newVal) => {
 .btn-filter {
   margin-left: 8px;
   font-size: 12px;
+}
+
+.btn-refresh {
+  margin-left: 8px;
+  font-size: 12px;
+  min-width: 56px;
+}
+
+.update-time {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: right;
+  margin-top: 4px;
 }
 
 .floating-details {
