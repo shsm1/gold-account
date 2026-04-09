@@ -37,36 +37,105 @@
         </van-radio-group>
       </van-cell>
       <van-cell title="日期" :value="form.date" is-link @click="showDatePicker = true" />
-      <van-field v-model="form.grams" label="克数" placeholder="请输入克数" type="digit" />
-      <van-field v-model="form.pricePerGram" label="单价(元/g)" placeholder="请输入每克单价" type="digit" />
+      <van-field v-model="form.grams" label="克数" placeholder="请输入克数" type="number" />
+      <van-field v-model="form.totalPrice" label="总价(元)" placeholder="请输入总价" type="number" />
       <van-cell v-if="form.type !== 'buy'" title="选择批次" :value="selectedBatchLabel || '请选择批次'" is-link @click="showBatchPicker = true" />
-      <van-cell v-if="form.type === 'sell'" title="手续费" :value="'¥' + form.fee" />
-      <van-cell title="总金额" :value="'¥' + totalAmount" />
+      <van-cell title="单价" :value="calculatedPrice > 0 ? '¥' + calculatedPrice.toFixed(2) + '/g' : '-'" />
     </van-cell-group>
 
     <div style="margin: 16px;">
       <van-button type="primary" block round @click="onSubmit">提交</van-button>
     </div>
 
-    <div class="records-section">
-      <div class="section-title">交易记录</div>
-      <div v-for="item in records" :key="item.id" class="record-item">
-        <div class="record-left">
-          <div class="record-header">
-            <span class="record-type" :class="item.type">{{ item.typeText }}</span>
-            <span class="record-date">{{ item.date }}</span>
-          </div>
-          <div class="record-detail">{{ item.grams }}g × ¥{{ item.pricePerGram }}/g = ¥{{ item.amount }}</div>
+    <div class="section-header">
+      <span class="section-title">持仓批次</span>
+      <van-radio-group v-model="batchFilter" direction="horizontal" icon-size="13">
+        <van-radio name="all">全部</van-radio>
+        <van-radio name="active">持仓中</van-radio>
+        <van-radio name="closed">已清仓</van-radio>
+      </van-radio-group>
+    </div>
+
+    <div v-if="filteredBatches.length === 0" class="empty-state">
+      <van-empty description="暂无批次记录" />
+    </div>
+    <div v-else>
+      <div
+        v-for="batch in filteredBatches"
+        :key="batch.id"
+        class="batch-card"
+      >
+        <div class="batch-header">
+          <div class="batch-date">{{ formatDate(batch.buyDate) }}</div>
+          <van-tag :type="batch.remainingGrams > 0.0001 ? 'primary' : 'default'" size="small">
+            {{ batch.remainingGrams > 0.0001 ? '持仓中' : '已清仓' }}
+          </van-tag>
         </div>
-<!--        <div class="record-delete" @click="deleteRecord(item.id)">删除</div>-->
+
+        <div class="batch-content">
+          <div class="batch-col">
+            <div class="batch-row">
+              <span class="label">买入</span>
+              <span class="value">{{ batch.buyGrams }}g</span>
+            </div>
+            <div class="batch-row">
+              <span class="label">剩余</span>
+              <span class="value highlight">{{ batch.remainingGrams }}g</span>
+            </div>
+          </div>
+          
+          <div class="batch-col">
+            <div class="batch-row">
+              <span class="label">已售</span>
+              <span class="value">{{ batch.soldGrams }}g</span>
+            </div>
+            <div class="batch-row">
+              <span class="label">成本</span>
+              <span class="value">¥{{ batch.costPerGram }}/g</span>
+            </div>
+          </div>
+
+          <div class="batch-col">
+            <div class="batch-row">
+              <span class="label">已提取</span>
+              <span class="value">{{ batch.extractedGrams }}g</span>
+            </div>
+            <div class="batch-row">
+              <span class="label">盈亏</span>
+              <span class="value" :class="batch.realizedProfit >= 0 ? 'profit-positive' : 'profit-negative'">
+                {{ batch.realizedProfit !== 0 ? (batch.realizedProfit >= 0 ? '+' : '') : '' }}¥{{ batch.realizedProfit }}
+              </span>
+            </div>
+          </div>
+          
+          <div class="batch-actions">
+            <van-button
+              v-if="batch.remainingGrams > 0.0001"
+              class="btn-action btn-sell"
+              size="mini"
+              round
+              @click="sellFromBatch(batch)"
+            >
+              卖出
+            </van-button>
+            <van-button
+              v-if="batch.remainingGrams > 0.0001"
+              class="btn-action btn-extract"
+              size="mini"
+              round
+              @click="extractFromBatch(batch)"
+            >
+              提取
+            </van-button>
+          </div>
+        </div>
       </div>
-      <div v-if="records.length === 0" class="empty-state">暂无交易记录</div>
     </div>
 
     <van-popup v-model:show="showDatePicker" position="bottom" @close="showDatePicker = false">
       <van-datetime-picker
         type="date"
-        :value="currentDate"
+        v-model="currentDate"
         title="选择日期"
         @confirm="onDateConfirm"
         @cancel="showDatePicker = false"
@@ -95,28 +164,28 @@
 
 <script setup>
 import { showToast } from 'vant'
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { getAllIcbcTransactions, addIcbcTransaction, deleteIcbcTransaction } from '../db'
-import { calculateIcbcHolding, getAvailableIcbcBatches, generateId } from '../utils/calculator'
+import { calculateIcbcHolding, getIcbcBatches, getAvailableIcbcBatches, generateId } from '../utils/calculator'
 
 const form = ref({
   type: 'buy',
   date: '',
   grams: '',
-  pricePerGram: '',
-  fee: '',
+  totalPrice: '',
   sourceBatchId: ''
 })
 
 const availableBatches = ref([])
 const maxGrams = ref(0)
 const selectedBatchLabel = ref('')
-const totalAmount = ref('0.00')
 const showDatePicker = ref(false)
 const showBatchPicker = ref(false)
-const currentDate = ref(Date.now())
-const minDate = new Date(2020, 0, 1).getTime()
-const maxDate = new Date(2030, 11, 31).getTime()
+const currentDate = ref(new Date())
+const minDate = new Date(2020, 0, 1)
+const maxDate = new Date(2030, 11, 31)
+
+const calculatedPrice = ref(0)
 
 const holding = ref({
   totalGrams: 0,
@@ -126,7 +195,8 @@ const holding = ref({
   extractedGrams: 0
 })
 
-const records = ref([])
+const icbcBatches = ref([])
+const batchFilter = ref('all')
 
 function formatDate(dateStr) {
   const date = new Date(dateStr)
@@ -142,29 +212,13 @@ onMounted(() => {
 async function loadData() {
   const transactions = await getAllIcbcTransactions()
   holding.value = calculateIcbcHolding(transactions)
-  records.value = transactions.map(r => {
-    let amount = 0
-    if (r.type === 'buy') {
-      amount = r.grams * r.pricePerGram
-    } else if (r.type === 'sell') {
-      amount = r.grams * r.pricePerGram - (r.fee || 0)
-    } else if (r.type === 'extract') {
-      amount = r.grams * r.pricePerGram
-    }
-    return {
-      ...r,
-      amount: amount.toFixed(2),
-      typeText: r.type === 'buy' ? '买入' : r.type === 'sell' ? '卖出' : '提取'
-    }
-  })
+  icbcBatches.value = getIcbcBatches(transactions)
 }
 
-// 将输入值的变更逻辑交给 v-model + watch 来管理，移除旧的 onGramsChange/onPriceChange
 async function onTypeChange(e) {
   const value = (e && typeof e === 'object' && 'detail' in e) ? e.detail : e
   form.value.type = value
   form.value.sourceBatchId = ''
-  form.value.fee = ''
   selectedBatchLabel.value = ''
   maxGrams.value = 0
   if (value !== 'buy') {
@@ -181,35 +235,53 @@ async function onTypeChange(e) {
     batchDetail: `剩余 ${b.remainingGrams}g | 成本 ¥${b.costPerGram}/g`
   }))
 }
-function updateFee() {
-  if (form.value.type === 'sell') {
-    const grams = parseFloat(form.value.grams) || 0
-    const price = parseFloat(form.value.pricePerGram) || 0
-    const fee = parseFloat((grams * price * 0.005).toFixed(2))
-    form.value.fee = fee > 0 ? fee.toString() : ''
-  } else {
-    form.value.fee = ''
-  }
-}
 
-// 使用 watch 实现总金额的实时计算，避免输入时被 onchange 覆盖
+// 使用 watch 实现单价的实时计算
 watch([
   () => form.value.grams,
-  () => form.value.pricePerGram,
-  () => form.value.fee
+  () => form.value.totalPrice
 ], () => {
   const grams = parseFloat(form.value.grams) || 0
-  const price = parseFloat(form.value.pricePerGram) || 0
-  const fee = parseFloat(form.value.fee) || 0
-  const amount = grams * price - fee
-  totalAmount.value = amount.toFixed(2)
-  updateFee()
+  const totalPrice = parseFloat(form.value.totalPrice) || 0
+  if (grams > 0 && totalPrice > 0) {
+    calculatedPrice.value = totalPrice / grams
+  } else {
+    calculatedPrice.value = 0
+  }
 }, { immediate: true })
 
-function onDateConfirm(e) {
-  const date = new Date(e.detail)
+function onDateConfirm(value) {
+  const date = new Date(value)
   form.value.date = formatDate(date)
   showDatePicker.value = false
+}
+
+const filteredBatches = computed(() => {
+  let result = icbcBatches.value
+  
+  if (batchFilter.value === 'active') {
+    result = result.filter(b => b.remainingGrams > 0.0001)
+  } else if (batchFilter.value === 'closed') {
+    result = result.filter(b => b.remainingGrams <= 0.0001)
+  }
+  
+  return result
+})
+
+function sellFromBatch(batch) {
+  form.value.type = 'sell'
+  form.value.sourceBatchId = batch.id
+  maxGrams.value = batch.remainingGrams
+  selectedBatchLabel.value = `${batch.buyDate} 买入 ${batch.buyGrams}g (剩余${batch.remainingGrams}g)`
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function extractFromBatch(batch) {
+  form.value.type = 'extract'
+  form.value.sourceBatchId = batch.id
+  maxGrams.value = batch.remainingGrams
+  selectedBatchLabel.value = `${batch.buyDate} 买入 ${batch.buyGrams}g (剩余${batch.remainingGrams}g)`
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 function selectBatch(batch) {
@@ -222,16 +294,19 @@ function selectBatch(batch) {
 
 async function onSubmit() {
   const grams = parseFloat(form.value.grams)
-  const pricePerGram = parseFloat(form.value.pricePerGram)
+  const totalPrice = parseFloat(form.value.totalPrice)
 
   if (!grams || grams <= 0) {
     showToast({ title: '请输入有效的克数', icon: 'none' })
     return
   }
-  if (!pricePerGram || pricePerGram <= 0) {
-    showToast({ title: '请输入有效的单价', icon: 'none' })
+  if (!totalPrice || totalPrice <= 0) {
+    showToast({ title: '请输入有效的总价', icon: 'none' })
     return
   }
+  
+  const pricePerGram = totalPrice / grams
+  
   if (form.value.type !== 'buy' && !form.value.sourceBatchId) {
     showToast({ title: '请选择批次', icon: 'none' })
     return
@@ -248,7 +323,7 @@ async function onSubmit() {
     sourceBatchId: form.value.type !== 'buy' ? form.value.sourceBatchId : undefined,
     grams,
     pricePerGram,
-    fee: form.value.type === 'sell' ? parseFloat(form.value.fee) || 0 : 0,
+    fee: 0,
     date: form.value.date
   }
 
@@ -263,11 +338,10 @@ async function onSubmit() {
   }
 
   form.value.grams = ''
-  form.value.pricePerGram = ''
-  form.value.fee = ''
+  form.value.totalPrice = ''
   form.value.sourceBatchId = ''
   selectedBatchLabel.value = ''
-  totalAmount.value = '0.00'
+  calculatedPrice.value = 0
 
   loadData()
 }
@@ -330,83 +404,125 @@ async function onSubmit() {
   color: #07c160;
 }
 
-.records-section {
-  margin: 16px;
-  padding: 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-}
-
-.section-title {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 12px;
-}
-
-.record-item {
+.section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-color);
-  transition: background 0.3s ease;
+  padding: 4px 4px 4px;
 }
 
-.record-item:hover {
-  background: var(--bg-card-hover);
-}
-
-.record-left {
-  flex: 1;
-}
-
-.record-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.record-type {
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-right: 8px;
-}
-
-.record-type.buy {
-  background: rgba(238, 122, 29, 0.2);
-  color: #ee7a1d;
-}
-
-.record-type.sell {
-  background: rgba(24, 144, 255, 0.2);
-  color: #1890ff;
-}
-
-.record-type.extract {
-  background: rgba(82, 196, 26, 0.2);
-  color: #52c41a;
-}
-
-.record-date {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.record-detail {
+.section-title {
   font-size: 14px;
-  color: #fff;
+  font-weight: 500;
+  color: var(--text-primary);
+  padding: 4px 20px 4px;
+}
+
+.batch-card {
+  margin: 4px 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 5px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  animation: slideUp 0.4s ease-out forwards;
+  position: relative;
+}
+
+.batch-card:hover {
+  border-color: var(--gold-accent);
+}
+
+.batch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.batch-date {
+  font-size: 13px;
+  color: var(--gold-accent);
   font-weight: 500;
 }
 
-.record-delete {
-  font-size: 13px;
-  color: #ee0a24;
-  padding: 4px 8px;
+.batch-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
+.batch-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.batch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.batch-row .label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.batch-row .value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.batch-row .value.highlight {
+  color: var(--gold-accent);
+  font-size: 14px;
+}
+
+.batch-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.btn-action {
+  padding: 0 12px;
+  height: 28px;
+  font-size: 12px;
+}
+
+.btn-sell {
+  background: #1890ff !important;
+  border-color: #1890ff !important;
+  color: #fff !important;
+}
+
+.btn-extract {
+  background: #52c41a !important;
+  border-color: #52c41a !important;
+  color: #fff !important;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.batch-card:nth-child(1) { animation-delay: 0s; }
+.batch-card:nth-child(2) { animation-delay: 0.05s; }
+.batch-card:nth-child(3) { animation-delay: 0.1s; }
+.batch-card:nth-child(4) { animation-delay: 0.15s; }
+.batch-card:nth-child(5) { animation-delay: 0.2s; }
 
 .empty-state {
   text-align: center;
