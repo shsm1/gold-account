@@ -114,6 +114,7 @@
               class="btn-action btn-sell"
               size="mini"
               round
+              type='success'
               @click="sellFromBatch(batch)"
             >
               卖出
@@ -123,6 +124,7 @@
               class="btn-action btn-extract"
               size="mini"
               round
+              type='success'
               @click="extractFromBatch(batch)"
             >
               提取
@@ -496,15 +498,11 @@ async function onSubmit() {
 }
 
 .btn-sell {
-  background: #1890ff !important;
-  border-color: #1890ff !important;
-  color: #fff !important;
+  margin-left: 3px;
 }
 
 .btn-extract {
-  background: #52c41a !important;
-  border-color: #52c41a !important;
-  color: #fff !important;
+  margin-left: 0px ;
 }
 
 @keyframes slideUp {

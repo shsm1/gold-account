@@ -57,7 +57,7 @@
             class="btn-filter" 
             size="mini" 
             round 
-            :type="priceFilterActive ? 'primary' : 'default'"
+            :type="priceFilterActive ? 'primary' : 'success'"
             @click="togglePriceFilter"
           >
             低于现价
@@ -654,7 +654,9 @@ watch(currentPrice, (newVal) => {
 .btn-filter {
   margin-left: 8px;
   font-size: 12px;
+  min-width: 56px;
 }
+
 
 .btn-refresh {
   margin-left: 8px;
