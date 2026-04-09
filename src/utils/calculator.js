@@ -40,12 +40,16 @@ export function calculateHolding(transactions) {
     }
   }
 
+  // 获取所有批次，计算批次盈亏总和
+  const batches = getBatches(transactions)
+  const batchRealizedProfit = batches.reduce((sum, batch) => sum + batch.realizedProfit, 0)
+
   return {
     totalGrams: parseFloat(totalGrams.toFixed(4)),
     avgCost: totalGrams > 0 ? parseFloat(((totalBuyAmount - totalSellAmount) / totalGrams).toFixed(2)) : 0,
     totalInvested: parseFloat(totalInvested.toFixed(2)),
     totalReturned: parseFloat(totalReturned.toFixed(2)),
-    realizedProfit: parseFloat(realizedProfit.toFixed(2))
+    realizedProfit: parseFloat(batchRealizedProfit.toFixed(2))
   }
 }
 
