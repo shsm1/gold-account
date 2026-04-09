@@ -178,8 +178,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAllTransactions } from '../db'
-import { calculateHolding, getBatches, calculateFloatingProfit, formatDate, getTotalInvested } from '../utils/calculator'
+import { getAllTransactions, getAllIcbcTransactions } from '../db'
+import { calculateHolding, getBatches, calculateFloatingProfit, formatDate, getTotalInvested, calculateIcbcHolding } from '../utils/calculator'
 import { fetchGoldPrice, startAutoRefresh } from '../utils/goldPrice'
 
 const router = useRouter()
@@ -195,6 +195,13 @@ const batches = ref([])
 const batchFilter = ref('all')
 const currentPrice = ref('')
 const totalInvested = ref(0)
+const icbcHolding = ref({
+  totalGrams: 0,
+  avgCost: 0,
+  totalInvested: 0,
+  realizedProfit: 0,
+  extractedGrams: 0
+})
 const priceFilterActive = ref(false)
 const isAutoFetch = ref(false)
 const lastUpdateTime = ref(null)
@@ -217,7 +224,7 @@ const holdingTotalValue = computed(() => {
 })
 
 const accountBalance = computed(() => {
-  return parseFloat((totalInvested.value - holding.value.totalInvested + holding.value.totalReturned).toFixed(2))
+  return parseFloat((totalInvested.value - holdingTotalValue.value - icbcHolding.value.totalInvested).toFixed(2))
 })
 
 function formatPriceInput(value) {
@@ -263,6 +270,9 @@ async function loadData() {
   holding.value = calculateHolding(transactions)
   batches.value = getBatches(transactions)
   totalInvested.value = getTotalInvested()
+  
+  const icbcTransactions = await getAllIcbcTransactions()
+  icbcHolding.value = calculateIcbcHolding(icbcTransactions)
 }
 
 async function refreshGoldPrice() {

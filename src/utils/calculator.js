@@ -173,7 +173,8 @@ export function calculateIcbcHolding(transactions) {
 
   let totalGrams = 0
   let totalCost = 0
-  let totalInvested = 0
+  let totalBuyAmount = 0
+  let totalSellAmount = 0
   let realizedProfit = 0
   let extractedGrams = 0
 
@@ -182,13 +183,14 @@ export function calculateIcbcHolding(transactions) {
       const amount = tx.grams * tx.pricePerGram
       totalGrams += tx.grams
       totalCost += amount
-      totalInvested += amount
+      totalBuyAmount += amount
     } else if (tx.type === 'sell') {
-      const avgCost = totalGrams > 0 ? totalCost / totalGrams : 0
       const sellAmount = tx.grams * tx.pricePerGram - (tx.fee || 0)
+      const avgCost = totalGrams > 0 ? totalCost / totalGrams : 0
       const profit = (tx.pricePerGram - avgCost) * tx.grams - (tx.fee || 0)
 
       realizedProfit += profit
+      totalSellAmount += sellAmount
       totalGrams -= tx.grams
       totalCost -= avgCost * tx.grams
 
@@ -208,6 +210,8 @@ export function calculateIcbcHolding(transactions) {
       }
     }
   }
+
+  const totalInvested = totalBuyAmount - totalSellAmount
 
   return {
     totalGrams: parseFloat(totalGrams.toFixed(2)),
