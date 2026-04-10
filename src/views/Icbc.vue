@@ -440,11 +440,11 @@ async function onSubmit() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 .batch-date {
-  font-size: 13px;
+  font-size: 10px;
   color: var(--gold-accent);
   font-weight: 500;
 }

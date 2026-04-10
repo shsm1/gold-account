@@ -6,7 +6,7 @@
       </transition>
     </router-view>
     <van-tabbar route>
-      <van-tabbar-item to="/" icon="home-o">首页</van-tabbar-item>
+      <van-tabbar-item to="/" icon="gold-coin-o">首页</van-tabbar-item>
       <van-tabbar-item to="/transactions" icon="orders-o">记录</van-tabbar-item>
       <van-tabbar-item to="/icbc" icon="cash-o">如意金</van-tabbar-item>
       <van-tabbar-item to="/settings" icon="setting-o">设置</van-tabbar-item>
@@ -150,6 +150,7 @@ body {
 
 .van-tabbar-item--active {
   color: var(--gold-accent) !important;
+  background-color: var(--bg-card-hover) !important;
 }
 
 .van-nav-bar {

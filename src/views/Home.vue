@@ -2,11 +2,11 @@
   <div>
     <div class="holding-card">
       <div class="card-header">
-        <h2>当前持仓:&nbsp{{ holding.totalGrams }}&nbsp克 </h2>
+        <h3>当前持仓:&nbsp{{ holding.totalGrams }}&nbsp克 </h3>
 <!--        <div class="grams"></div>-->
 <!--        <div class="unit"></div>-->
         <div class="account-balance">
-          <h2>账户余额： ¥{{ accountBalance }}</h2>
+          <h3>账户余额： {{ accountBalance }}</h3>
 <!--          <span class="balance-value" :class="accountBalance >= 0 ? 'profit-positive' : 'profit-negative'">-->
 
 <!--          </span>-->
@@ -16,16 +16,16 @@
       <div class="holding-details">
         <div class="item">
           <div class="label">平均成本</div>
-          <div class="value">¥{{ holding.avgCost }}/g</div>
+          <div class="value">{{ holding.avgCost }}</div>
         </div>
         <div class="item">
           <div class="label">持仓总价</div>
-          <div class="value gold-text">¥{{ holdingTotalValue }}</div>
+          <div class="value gold-text">{{ holdingTotalValue }}</div>
         </div>
         <div class="item">
           <div class="label">已实现盈亏</div>
           <div class="value" :class="holding.realizedProfit >= 0 ? 'profit-positive' : 'profit-negative'">
-            {{ holding.realizedProfit >= 0 ? '+' : '' }}¥{{ holding.realizedProfit }}
+            {{ holding.realizedProfit >= 0 ? '+' : '' }}{{ holding.realizedProfit }}
           </div>
         </div>
       </div>
@@ -90,9 +90,10 @@
       </van-button>
     </div>
 
-    <div class="section-header">
-      <span class="section-title">持仓批次</span>
-      <van-radio-group v-model="batchFilter" direction="horizontal" icon-size="13">
+<!--    <div class="section-header">-->
+    <div>
+<!--      <span class="section-title">持仓批次</span>-->
+      <van-radio-group v-model="batchFilter" direction="horizontal" icon-size="10" class="custom-radio-group">
         <van-radio name="all">全部</van-radio>
         <van-radio name="active">持仓中</van-radio>
         <van-radio name="closed">已清仓</van-radio>
@@ -110,48 +111,60 @@
       >
         <div class="batch-header">
           <div class="batch-date">{{ formatDate(batch.buyDate) }}</div>
-          <van-tag :type="batch.remainingGrams > 0.0001 ? 'primary' : 'default'" size="small">
+          <van-tag class="status" :type="batch.remainingGrams > 0.0001 ? 'primary' : 'default'" size="mini">
             {{ batch.remainingGrams > 0.0001 ? '持仓中' : '已清仓' }}
           </van-tag>
         </div>
 
         <div class="batch-content">
+
           <div class="batch-col">
             <div class="batch-row">
-              <span class="label">买入</span>
-              <span class="value">{{ batch.buyGrams }}g</span>
+              <span class="label">成本</span>
+              <span class="value">{{ batch.costPerGram.toFixed(2) }}</span>
             </div>
             <div class="batch-row">
-              <span class="label">剩余</span>
-              <span class="value highlight">{{ batch.remainingGrams }}g</span>
+              <span class="label">总价</span>
+              <span class="value gold-text">{{ (batch.buyGrams * batch.costPerGram).toFixed(2) }}</span>
             </div>
+
+
 
           </div>
           
           <div class="batch-col">
             <div class="batch-row">
               <span class="label">已售</span>
-              <span class="value">{{ batch.soldGrams }}g</span>
-            </div>
-            <div class="batch-row">
-              <span class="label">成本</span>
-              <span class="value">¥{{ batch.costPerGram }}/g</span>
-            </div>
-          </div>
-
-          <div class="batch-col">
-            <div class="batch-row">
-              <span class="label">总价</span>
-              <span class="value gold-text">¥{{ (batch.buyGrams * batch.costPerGram).toFixed(2) }}</span>
+              <span class="value">{{ batch.soldGrams }}</span>
             </div>
             <div class="batch-row">
               <span class="label">盈亏</span>
               <span class="value" :class="batch.realizedProfit >= 0 ? 'profit-positive' : 'profit-negative'">
-                {{ batch.realizedProfit !== 0 ? (batch.realizedProfit >= 0 ? '+' : '') : '' }}¥{{ batch.realizedProfit }}
+                {{ batch.realizedProfit !== 0 ? (batch.realizedProfit >= 0 ? '+' : '') : '' }}{{ batch.realizedProfit.toFixed(2) }}
               </span>
             </div>
 
+          </div>
 
+          <div class="batch-col">
+            <div class="batch-row">
+              <span class="label">买入</span>
+              <span class="value">{{ batch.buyGrams }}</span>
+            </div>
+            <div class="batch-row">
+              <span class="label">剩余</span>
+              <span class="value highlight">{{ batch.remainingGrams }}</span>
+            </div>
+          </div>
+          
+          <div v-if="currentPrice && parseFloat(currentPrice) > 0 && batch.remainingGrams > 0.0001" class="batch-col batch-profit-col">
+            <div class="batch-row">
+              <span class="label">&nbsp</span>
+              <span class="value" :class="getBatchFloatingProfit(batch) >= 0 ? 'profit-positive-1' : 'profit-negative-1'">
+                <span class="profit-arrow">{{ getBatchFloatingProfit(batch) >= 0 ? '↑' : '↓' }}</span>
+                {{ Math.abs(getBatchFloatingProfit(batch)).toFixed(2) }}
+              </span>
+            </div>
           </div>
           
           <div class="batch-action">
@@ -179,7 +192,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAllTransactions, getAllIcbcTransactions } from '../db'
-import { calculateHolding, getBatches, calculateFloatingProfit, formatDate, getTotalInvested, calculateIcbcHolding } from '../utils/calculator'
+import { calculateHolding, getBatches, calculateFloatingProfit, formatDate, getTotalInvested, calculateIcbcHolding, getSettings } from '../utils/calculator'
 import { fetchGoldPrice, startAutoRefresh } from '../utils/goldPrice'
 
 const router = useRouter()
@@ -205,6 +218,7 @@ const icbcHolding = ref({
 const priceFilterActive = ref(false)
 const isAutoFetch = ref(false)
 const lastUpdateTime = ref(null)
+const sellFeeRate = ref(0)
 let stopAutoRefresh = null
 
 const floatingProfit = computed(() => {
@@ -295,10 +309,24 @@ function sellFromBatch(batch) {
   router.push(`/add?type=sell&batchId=${batch.id}&maxGrams=${batch.remainingGrams}`)
 }
 
+function getBatchFloatingProfit(batch) {
+  const price = parseFloat(currentPrice.value)
+  if (!price || price <= 0 || batch.remainingGrams <= 0.0001) return 0
+  
+  const currentMarketValue = price * batch.remainingGrams
+  const batchTotalValue = batch.buyGrams * batch.costPerGram
+  const estimatedSellFee = currentMarketValue * sellFeeRate.value
+  
+  return currentMarketValue - batchTotalValue - estimatedSellFee
+}
+
 onMounted(() => {
   loadData()
   refreshGoldPrice()
   stopAutoRefresh = startAutoRefresh(refreshGoldPrice, 60000)
+  
+  const settings = getSettings()
+  sellFeeRate.value = settings.sellFeeRate || 0
 })
 
 onUnmounted(() => {
@@ -336,10 +364,10 @@ watch(currentPrice, (newVal) => {
   }
 }
 
-.holding-card h2 {
-  font-size: 16px;
+.holding-card h3 {
+  font-size: 14px;
   color: var(--gold-accent);
-  margin-bottom: 8px;
+  /*margin-bottom: 8px;*/
 }
 
 .holding-card .grams {
@@ -362,8 +390,8 @@ watch(currentPrice, (newVal) => {
 .holding-details {
   display: flex;
   justify-content: space-between;
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid rgba(212, 175, 55, 0.3);
 }
 
@@ -372,15 +400,26 @@ watch(currentPrice, (newVal) => {
 }
 
 .holding-details .label {
-  font-size: 12px;
+  font-size: 10px;
   opacity: 0.7;
   margin-bottom: 4px;
 }
 
-.holding-details .value {
-  font-size: 16px;
+/*.holding-details .value {*/
+/*  font-size: 12px;*/
+/*  font-weight: 500;*/
+/*  color: #fff;*/
+/*}*/
+.holding-details .value .profit-positive {
+  font-size: 12px;
   font-weight: 500;
-  color: #fff;
+  color: #ff0000;
+}
+
+.holding-details .value .profit-negative {
+  font-size: 12px;
+  font-weight: 500;
+  color: #2fff00;
 }
 
 .gold-text {
@@ -398,7 +437,7 @@ watch(currentPrice, (newVal) => {
   flex: 1;
   height: 30px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .gold-btn {
@@ -429,6 +468,10 @@ watch(currentPrice, (newVal) => {
   padding: 4px 20px 4px;
 }
 
+.status{
+  font-size: 8px;
+}
+
 .batch-card {
   margin: 4px 4px;
   background: var(--bg-card);
@@ -449,7 +492,7 @@ watch(currentPrice, (newVal) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: -4px;
 }
 
 .batch-date {
@@ -472,6 +515,10 @@ watch(currentPrice, (newVal) => {
   min-width: 0;
 }
 
+.batch-profit-col {
+  min-width: 80px;
+}
+
 .batch-left, .batch-right {
   flex: 1;
   display: flex;
@@ -490,19 +537,33 @@ watch(currentPrice, (newVal) => {
   color: var(--text-secondary);
 }
 
-.batch-row .value {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-primary);
+.batch-row .value{
+  font-size: 12px;
+}
+
+.batch-row .profit-positive-1{
+  font-size: 15px;
+  color: #ff0000;
+}
+
+.batch-row .profit-negative-1{
+  font-size: 15px;
+  color: #2fff00;
 }
 
 .batch-row .value.highlight {
   color: var(--gold-accent);
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .batch-row .value.gold-text {
   color: var(--gold-accent);
+}
+
+.profit-arrow {
+  font-size: 10px;
+  margin-right: 2px;
+  font-weight: bold;
 }
 
 .batch-action {
@@ -530,12 +591,12 @@ watch(currentPrice, (newVal) => {
   box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15);
 }
 
-.batch-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
+/*.batch-header {*/
+/*  display: flex;*/
+/*  justify-content: space-between;*/
+/*  align-items: center;*/
+/*  margin-bottom: 12px;*/
+/*}*/
 
 .batch-date {
   font-size: 14px;
@@ -603,14 +664,22 @@ watch(currentPrice, (newVal) => {
   border-top: 1px dashed var(--border-color);
 }
 
+.custom-radio-group {
+  font-size: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0px 42px;
+}
+
 .batch-action {
   margin-top: 12px;
   text-align: right;
 }
 
 .current-price-section {
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid rgba(212, 175, 55, 0.3);
 }
 
@@ -621,7 +690,7 @@ watch(currentPrice, (newVal) => {
 }
 
 .price-label {
-  font-size: 14px;
+  font-size: 10px;
   white-space: nowrap;
   color: rgba(255, 255, 255, 0.7);
 }
@@ -636,7 +705,7 @@ watch(currentPrice, (newVal) => {
 
 .price-input :deep(.van-field__control) {
   color: var(--gold-accent);
-  font-size: 16px;
+  font-size: 10px;
   font-weight: 500;
   text-align: center;
 }
@@ -646,26 +715,26 @@ watch(currentPrice, (newVal) => {
 }
 
 .price-unit {
-  font-size: 14px;
+  font-size: 10px;
   white-space: nowrap;
   color: rgba(255, 255, 255, 0.7);
 }
 
 .btn-filter {
   margin-left: 8px;
-  font-size: 12px;
+  font-size: 10px;
   min-width: 56px;
 }
 
 
 .btn-refresh {
   margin-left: 8px;
-  font-size: 12px;
+  font-size: 10px;
   min-width: 56px;
 }
 
 .update-time {
-  font-size: 11px;
+  font-size: 8px;
   color: rgba(255, 255, 255, 0.5);
   text-align: right;
   margin-top: 4px;
@@ -674,7 +743,7 @@ watch(currentPrice, (newVal) => {
 .floating-details {
   display: flex;
   justify-content: space-around;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .floating-details .item {
@@ -682,15 +751,19 @@ watch(currentPrice, (newVal) => {
 }
 
 .floating-details .label {
-  font-size: 12px;
+  font-size: 10px;
   opacity: 0.7;
   margin-bottom: 4px;
 }
 
 .floating-details .value {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 500;
 }
+
+
+
+
 
 .card-header {
   display: flex;
@@ -736,6 +809,7 @@ watch(currentPrice, (newVal) => {
   font-size: 16px;
   font-weight: bold;
 }
+
 
 /* 动画 */
 @keyframes slideUp {
