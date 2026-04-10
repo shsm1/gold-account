@@ -29,8 +29,8 @@
     </div>
 
     <van-cell-group inset >
-      <van-cell title="交易类型" >
-        <van-radio-group v-model="form.type" direction="horizontal" @change="onTypeChange">
+      <van-cell title="交易类型" class = "radio" >
+        <van-radio-group v-model="form.type" direction="horizontal" @change="onTypeChange" >
           <van-radio name="buy">买</van-radio>
           <van-radio name="sell">卖</van-radio>
           <van-radio name="extract">提</van-radio>
@@ -588,11 +588,22 @@ async function onSubmit() {
 .van-radio-group {
   flex-wrap: nowrap !important;
   white-space: nowrap;
-  gap: 8px;
+  gap: 0px;
+  margin-right: 10px;
 }
 
 .van-radio {
   flex-shrink: 0;
+}
+
+.radio {
+
+}
+
+.radio :deep(.van-radio__icon) {
+  font-size: 15px;
+  justify-content: flex-start;
+
 }
 
 /* 动画 */

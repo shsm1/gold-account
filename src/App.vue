@@ -141,7 +141,7 @@ body {
 /* Vant 组件覆盖样式 */
 .van-tabbar {
   background-color: var(--bg-primary) !important;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-color) ;
 }
 
 .van-tabbar-item {

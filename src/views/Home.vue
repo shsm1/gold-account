@@ -159,7 +159,7 @@
           
           <div v-if="currentPrice && parseFloat(currentPrice) > 0 && batch.remainingGrams > 0.0001" class="batch-col batch-profit-col">
             <div class="batch-row">
-              <span class="label">&nbsp</span>
+<!--              <span class="label"></span>-->
               <span class="value" :class="getBatchFloatingProfit(batch) >= 0 ? 'profit-positive-1' : 'profit-negative-1'">
                 <span class="profit-arrow">{{ getBatchFloatingProfit(batch) >= 0 ? '↑' : '↓' }}</span>
                 {{ Math.abs(getBatchFloatingProfit(batch)).toFixed(2) }}
@@ -238,7 +238,8 @@ const holdingTotalValue = computed(() => {
 })
 
 const accountBalance = computed(() => {
-  return parseFloat((totalInvested.value - holdingTotalValue.value - icbcHolding.value.totalInvested).toFixed(2))
+  const holdingNetInvested = holding.value.totalInvested - holding.value.totalReturned
+  return parseFloat((totalInvested.value - holdingNetInvested - icbcHolding.value.totalInvested).toFixed(2))
 })
 
 function formatPriceInput(value) {
@@ -533,27 +534,27 @@ watch(currentPrice, (newVal) => {
 }
 
 .batch-row .label {
-  font-size: 12px;
+  font-size: 10px;
   color: var(--text-secondary);
 }
 
 .batch-row .value{
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .batch-row .profit-positive-1{
-  font-size: 15px;
+  font-size: 13px;
   color: #ff0000;
 }
 
 .batch-row .profit-negative-1{
-  font-size: 15px;
+  font-size: 13px;
   color: #2fff00;
 }
 
 .batch-row .value.highlight {
   color: var(--gold-accent);
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .batch-row .value.gold-text {
