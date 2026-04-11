@@ -100,6 +100,13 @@
       </van-radio-group>
     </div>
 
+    <div v-if="priceFilterActive && currentPrice && parseFloat(currentPrice) > 0" class="filter-status-bar">
+      <div class="status-info">
+        <span class="status-label">低于现价持仓:</span>
+        <span class="status-value">{{ belowPriceTotalGrams }} g</span>
+      </div>
+    </div>
+
     <div v-if="filteredBatches.length === 0" class="empty-state">
       <van-empty description="暂无批次记录" />
     </div>
@@ -277,7 +284,23 @@ const filteredBatches = computed(() => {
     )
   }
   
+  // 如果激活了金价筛选，按成本价从高到低排序
+  if (priceFilterActive.value && currentPrice.value) {
+    result = result.sort((a, b) => b.costPerGram - a.costPerGram)
+  }
+  
   return result
+})
+
+const belowPriceTotalGrams = computed(() => {
+  if (!currentPrice.value || parseFloat(currentPrice.value) <= 0) return 0
+  
+  const price = parseFloat(currentPrice.value)
+  const total = batches.value
+    .filter(b => b.remainingGrams > 0.0001 && b.costPerGram < price)
+    .reduce((sum, b) => sum + b.remainingGrams, 0)
+  
+  return total.toFixed(2)
 })
 
 async function loadData() {
@@ -512,8 +535,8 @@ watch(currentPrice, (newVal) => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  min-width: 70px;
+  gap: 2px;
+  min-width: 80px;
 }
 
 .batch-profit-col {
@@ -532,7 +555,7 @@ watch(currentPrice, (newVal) => {
 .batch-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 15px;
 }
 
 .batch-row .label {
@@ -551,7 +574,7 @@ watch(currentPrice, (newVal) => {
 
 .batch-row .value-sp{
   font-size: 10px;
-  /*margin-right: 30px;*/
+  /*margin-left: 30px;*/
   flex: 1;
   text-align: right;
 }
@@ -692,6 +715,32 @@ watch(currentPrice, (newVal) => {
   justify-content: space-between;
   align-items: center;
   margin: 0px 42px;
+}
+
+.filter-status-bar {
+  margin: 8px 4px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.08) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 8px;
+  animation: slideUp 0.3s ease-out;
+}
+
+.status-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.status-value {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--gold-accent);
 }
 
 .batch-action {
