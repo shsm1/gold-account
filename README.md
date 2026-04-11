@@ -6,8 +6,7 @@
 
 ## 运行截图
 
-![image](https://github.com/user-attachments/assets/a8f00e96-b061-4544-a8b0-5c08433609da)
-
+<img src="https://github.com/user-attachments/assets/a8f00e96-b061-4544-a8b0-5c08433609da" width="300" />
 
 ##  核心功能
 
