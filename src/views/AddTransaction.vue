@@ -38,12 +38,12 @@
           :rules="[{ required: true, message: '请输入克数' }]"
         />
 
-        <van-field
-          v-if="form.type === 'sell' && maxGrams > 0"
-          name="maxHint"
-          label="可卖上限"
-          :value="maxGrams + 'g'"
-        />
+<!--        <van-field-->
+<!--          v-if="form.type === 'sell' && maxGrams > 0"-->
+<!--          name="maxHint"-->
+<!--          label="可卖上限"-->
+<!--          :value="maxGrams + 'g'"-->
+<!--        />-->
 
         <van-field
           v-model="form.pricePerGram"

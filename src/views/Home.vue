@@ -125,7 +125,7 @@
 
         <div class="batch-content">
 
-          <div class="batch-col">
+          <div class="batch-col-sp">
             <div class="batch-row">
               <span class="label">成本</span>
               <span class="value-sp">{{ batch.costPerGram.toFixed(2) }}</span>
@@ -134,9 +134,6 @@
               <span class="label">总价</span>
               <span class="value gold-text-sp">{{ (batch.buyGrams * batch.costPerGram).toFixed(2) }}</span>
             </div>
-
-
-
           </div>
           
           <div class="batch-col">
@@ -536,7 +533,15 @@ watch(currentPrice, (newVal) => {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 80px;
+  min-width: 60px;
+}
+
+.batch-col-sp {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 100px;
 }
 
 .batch-profit-col {

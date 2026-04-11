@@ -93,6 +93,8 @@ import { ref, computed, onMounted } from 'vue'
 import { getAllTransactions, clearAllTransactions, importTransactions } from '../db'
 import { getSettings, saveSettings, getTotalInvested, setTotalInvested } from '../utils/calculator'
 import { showToast } from 'vant'
+import { Capacitor } from '@capacitor/core'
+import { Directory, Filesystem } from '@capacitor/filesystem'
 
 const fileInput = ref(null)
 const showClearDialog = ref(false)
@@ -133,14 +135,30 @@ async function exportData() {
   }
 
   const data = JSON.stringify(transactions, null, 2)
-  const blob = new Blob([data], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `积存金记账_${new Date().toISOString().split('T')[0]}.json`
-  a.click()
-  URL.revokeObjectURL(url)
-  showToast('导出成功')
+  const fileName = `积存金记账_${new Date().toISOString().split('T')[0]}.json`
+
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const result = await Filesystem.writeFile({
+        path: fileName,
+        data: data,
+        directory: Directory.Downloads,
+        encoding: 'utf8'
+      })
+      showToast('已导出到下载目录')
+    } catch (e) {
+      showToast('导出失败: ' + e.message)
+    }
+  } else {
+    const blob = new Blob([data], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    a.click()
+    URL.revokeObjectURL(url)
+    showToast('导出成功')
+  }
 }
 
 function triggerImport() {
