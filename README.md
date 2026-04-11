@@ -6,7 +6,8 @@
 
 ## 运行截图
 
-<img src="assets/image.jpg" alt="image" style="zoom:25%;" />
+![image](https://github.com/user-attachments/assets/a8f00e96-b061-4544-a8b0-5c08433609da)
+
 
 ##  核心功能
 
