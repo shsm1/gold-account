@@ -121,11 +121,11 @@
           <div class="batch-col">
             <div class="batch-row">
               <span class="label">成本</span>
-              <span class="value">{{ batch.costPerGram.toFixed(2) }}</span>
+              <span class="value-sp">{{ batch.costPerGram.toFixed(2) }}</span>
             </div>
             <div class="batch-row">
               <span class="label">总价</span>
-              <span class="value gold-text">{{ (batch.buyGrams * batch.costPerGram).toFixed(2) }}</span>
+              <span class="value gold-text-sp">{{ (batch.buyGrams * batch.costPerGram).toFixed(2) }}</span>
             </div>
 
 
@@ -497,7 +497,7 @@ watch(currentPrice, (newVal) => {
 }
 
 .batch-date {
-  font-size: 13px;
+  font-size: 9px;
   color: var(--gold-accent);
   font-weight: 500;
 }
@@ -513,11 +513,13 @@ watch(currentPrice, (newVal) => {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  min-width: 0;
+  min-width: 70px;
 }
 
 .batch-profit-col {
-  min-width: 80px;
+  flex: 0 0 auto;
+  min-width: 70px;
+  margin-left: auto;
 }
 
 .batch-left, .batch-right {
@@ -529,17 +531,29 @@ watch(currentPrice, (newVal) => {
 
 .batch-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 4px;
 }
 
 .batch-row .label {
   font-size: 10px;
   color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
+
 
 .batch-row .value{
   font-size: 10px;
+  /*text-align: right;*/
+
+}
+
+.batch-row .value-sp{
+  font-size: 10px;
+  /*margin-right: 30px;*/
+  flex: 1;
+  text-align: right;
 }
 
 .batch-row .profit-positive-1{
@@ -559,6 +573,13 @@ watch(currentPrice, (newVal) => {
 
 .batch-row .value.gold-text {
   color: var(--gold-accent);
+}
+
+.batch-row .value.gold-text-sp {
+  color: var(--gold-accent);
+  /*margin-right: 30px;*/
+  flex: 1;
+  text-align: right;
 }
 
 .profit-arrow {
@@ -600,7 +621,7 @@ watch(currentPrice, (newVal) => {
 /*}*/
 
 .batch-date {
-  font-size: 14px;
+  font-size: 10px;
   color: var(--gold-accent);
   font-weight: 500;
 }
